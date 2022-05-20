@@ -7,17 +7,17 @@ type Bool {
 
 // Is true
 // Returns true if input is true
-is_true(b: Bool): Bool
+Bool.is_true(b: Bool): Bool
   b
 
 // Is false
 // Returns true if input is false
-is_false(b: Bool): Bool
-  neg(b)
+Bool.is_false(b: Bool): Bool
+  Bool.neg(b)
 
 // Negation
 // Returns the opposite of a Bool
-neg(b: Bool): Bool 
+Bool.neg(b: Bool): Bool 
   case b {
     true: Bool.false
     false: Bool.true
@@ -25,7 +25,7 @@ neg(b: Bool): Bool
 
 // And
 // Returns true if both inputs are true
-and(a: Bool, b: Bool): Bool
+Bool.and(a: Bool, b: Bool): Bool
   case a {
     true: b
     false: Bool.false
@@ -33,7 +33,7 @@ and(a: Bool, b: Bool): Bool
 
 // Or
 // Returs true if any input is true
-or(a: Bool, b: Bool): Bool
+Bool.or(a: Bool, b: Bool): Bool
   case a {
     true: Bool.true
     false: b
@@ -41,96 +41,102 @@ or(a: Bool, b: Bool): Bool
 
 // Equal
 // Returs true if both inputs are identical
-eql(a: Bool, b: Bool): Bool
+Bool.eql(a: Bool, b: Bool): Bool
   case a {
-    true: and(a, b)
-    false: nor(a, b)
+    true: Bool.and(a, b)
+    false: Bool.nor(a, b)
   }
 
 // Xor
 // Returns true if both inputs are different
-xor(a: Bool, b: Bool): Bool
-  neg(eql(a, b))
+Bool.xor(a: Bool, b: Bool): Bool
+  Bool.neg(Bool.eql(a, b))
 
 // Nor
 // Returns true if both inputs are false
-nor(a: Bool, b: Bool): Bool
-  neg(or(a, b))
+Bool.nor(a: Bool, b: Bool): Bool
+  Bool.neg(Bool.or(a, b))
 
 // Nand
 // Returns false only if both inputs are true
-nand(a: Bool, b: Bool): Bool
-  neg(and(a, b))
+Bool.nand(a: Bool, b: Bool): Bool
+  Bool.neg(Bool.and(a, b))
 
 // Xnor
 // Returns true if both inputs are identical
-xnor(a: Bool, b: Bool): Bool
-  eql(a, b)
+Bool.xnor(a: Bool, b: Bool): Bool
+  Bool.eql(a, b)
+
+Bool.test(message: String, expected: Bool, received: Bool): String
+  case Bool.eql(expected, received) {
+    true: String.concat(message, ": Success")
+    false: String.concat(message, ": ERROR")
+  }
 
 ex_00: IO(Unit)
   IO {
     IO.print("-- is_true --")
-    IO.print(test("wen true",  Bool.true,  is_true(Bool.true)))
-    IO.print(test("wen false", Bool.false, is_true(Bool.false)))
+    IO.print(Bool.test("wen true",  Bool.true,  Bool.is_true(Bool.true)))
+    IO.print(Bool.test("wen false", Bool.false, Bool.is_true(Bool.false)))
     IO.print("-------------\n")
 
     IO.print("-- is_false --")
-    IO.print(test("wen true",  Bool.false, is_false(Bool.true)))
-    IO.print(test("wen false", Bool.true,  is_false(Bool.false)))
+    IO.print(Bool.test("wen true",  Bool.false, Bool.is_false(Bool.true)))
+    IO.print(Bool.test("wen false", Bool.true,  Bool.is_false(Bool.false)))
     IO.print("-------------\n")
 
     IO.print("-- neg --")
-    IO.print(test("wen true",  Bool.false, neg(Bool.true)))
-    IO.print(test("wen false", Bool.true,  neg(Bool.false)))
+    IO.print(Bool.test("wen true",  Bool.false, Bool.neg(Bool.true)))
+    IO.print(Bool.test("wen false", Bool.true,  Bool.neg(Bool.false)))
     IO.print("-------------\n")
 
     IO.print("-- and --")
-    IO.print(test("wen false false", Bool.false, and(Bool.false, Bool.false)))
-    IO.print(test("wen false true",  Bool.false, and(Bool.false, Bool.true)))
-    IO.print(test("wen true false",  Bool.false, and(Bool.true,  Bool.false)))
-    IO.print(test("wen true true",   Bool.true,  and(Bool.true,  Bool.true)))
+    IO.print(Bool.test("wen false false", Bool.false, Bool.and(Bool.false, Bool.false)))
+    IO.print(Bool.test("wen false true",  Bool.false, Bool.and(Bool.false, Bool.true)))
+    IO.print(Bool.test("wen true false",  Bool.false, Bool.and(Bool.true,  Bool.false)))
+    IO.print(Bool.test("wen true true",   Bool.true,  Bool.and(Bool.true,  Bool.true)))
     IO.print("-------------\n")
 
     IO.print("-- or --")
-    IO.print(test("wen false false", Bool.false, or(Bool.false, Bool.false)))
-    IO.print(test("wen false true",  Bool.true,  or(Bool.false, Bool.true)))
-    IO.print(test("wen true false",  Bool.true,  or(Bool.true,  Bool.false)))
-    IO.print(test("wen true true",   Bool.true,  or(Bool.true,  Bool.true)))
+    IO.print(Bool.test("wen false false", Bool.false, Bool.or(Bool.false, Bool.false)))
+    IO.print(Bool.test("wen false true",  Bool.true,  Bool.or(Bool.false, Bool.true)))
+    IO.print(Bool.test("wen true false",  Bool.true,  Bool.or(Bool.true,  Bool.false)))
+    IO.print(Bool.test("wen true true",   Bool.true,  Bool.or(Bool.true,  Bool.true)))
     IO.print("-------------\n")
 
     IO.print("-- eql --")
-    IO.print(test("wen false false", Bool.true,  eql(Bool.false, Bool.false)))
-    IO.print(test("wen false true",  Bool.false, eql(Bool.false, Bool.true)))
-    IO.print(test("wen true false",  Bool.false, eql(Bool.true,  Bool.false)))
-    IO.print(test("wen true true",   Bool.true,  eql(Bool.true,  Bool.true)))
+    IO.print(Bool.test("wen false false", Bool.true,  Bool.eql(Bool.false, Bool.false)))
+    IO.print(Bool.test("wen false true",  Bool.false, Bool.eql(Bool.false, Bool.true)))
+    IO.print(Bool.test("wen true false",  Bool.false, Bool.eql(Bool.true,  Bool.false)))
+    IO.print(Bool.test("wen true true",   Bool.true,  Bool.eql(Bool.true,  Bool.true)))
     IO.print("-------------\n")
 
     IO.print("-- xor --")
-    IO.print(test("wen false false", Bool.false, xor(Bool.false, Bool.false)))
-    IO.print(test("wen false true",  Bool.true,  xor(Bool.false, Bool.true)))
-    IO.print(test("wen true false",  Bool.true,  xor(Bool.true,  Bool.false)))
-    IO.print(test("wen true true",   Bool.false, xor(Bool.true,  Bool.true)))
+    IO.print(Bool.test("wen false false", Bool.false, Bool.xor(Bool.false, Bool.false)))
+    IO.print(Bool.test("wen false true",  Bool.true,  Bool.xor(Bool.false, Bool.true)))
+    IO.print(Bool.test("wen true false",  Bool.true,  Bool.xor(Bool.true,  Bool.false)))
+    IO.print(Bool.test("wen true true",   Bool.false, Bool.xor(Bool.true,  Bool.true)))
     IO.print("-------------\n")
 
     IO.print("-- nor --")
-    IO.print(test("wen false false", Bool.true,  nor(Bool.false, Bool.false)))
-    IO.print(test("wen false true",  Bool.false, nor(Bool.false, Bool.true)))
-    IO.print(test("wen true false",  Bool.false, nor(Bool.true,  Bool.false)))
-    IO.print(test("wen true true",   Bool.false, nor(Bool.true,  Bool.true)))
+    IO.print(Bool.test("wen false false", Bool.true,  Bool.nor(Bool.false, Bool.false)))
+    IO.print(Bool.test("wen false true",  Bool.false, Bool.nor(Bool.false, Bool.true)))
+    IO.print(Bool.test("wen true false",  Bool.false, Bool.nor(Bool.true,  Bool.false)))
+    IO.print(Bool.test("wen true true",   Bool.false, Bool.nor(Bool.true,  Bool.true)))
     IO.print("-------------\n")
 
     IO.print("-- nand --")
-    IO.print(test("wen false false", Bool.true,  nand(Bool.false, Bool.false)))
-    IO.print(test("wen false true",  Bool.true,  nand(Bool.false, Bool.true)))
-    IO.print(test("wen true false",  Bool.true,  nand(Bool.true,  Bool.false)))
-    IO.print(test("wen true true",   Bool.false, nand(Bool.true,  Bool.true)))
+    IO.print(Bool.test("wen false false", Bool.true,  Bool.nand(Bool.false, Bool.false)))
+    IO.print(Bool.test("wen false true",  Bool.true,  Bool.nand(Bool.false, Bool.true)))
+    IO.print(Bool.test("wen true false",  Bool.true,  Bool.nand(Bool.true,  Bool.false)))
+    IO.print(Bool.test("wen true true",   Bool.false, Bool.nand(Bool.true,  Bool.true)))
     IO.print("-------------\n")
 
     IO.print("-- xnor --")
-    IO.print(test("wen false false", Bool.true,  xnor(Bool.false, Bool.false)))
-    IO.print(test("wen false true",  Bool.false, xnor(Bool.false, Bool.true)))
-    IO.print(test("wen true false",  Bool.false, xnor(Bool.true,  Bool.false)))
-    IO.print(test("wen true true",   Bool.true,  xnor(Bool.true,  Bool.true)))
+    IO.print(Bool.test("wen false false", Bool.true,  Bool.xnor(Bool.false, Bool.false)))
+    IO.print(Bool.test("wen false true",  Bool.false, Bool.xnor(Bool.false, Bool.true)))
+    IO.print(Bool.test("wen true false",  Bool.false, Bool.xnor(Bool.true,  Bool.false)))
+    IO.print(Bool.test("wen true true",   Bool.true,  Bool.xnor(Bool.true,  Bool.true)))
     IO.print("-------------\n")
 
     IO.print("UwU")

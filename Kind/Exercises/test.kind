@@ -1,5 +1,0 @@
-test(message: String, expected: Bool, received: Bool): String
-  case eql(expected, received) {
-    true: String.concat(message, ": Success")
-    false: String.concat(message, ": ERROR")
-  }

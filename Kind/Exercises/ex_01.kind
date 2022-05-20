@@ -6,32 +6,105 @@ type MaybeBool {
  }
 
 // Returns true if Maybe is none
-is_none(a: MaybeBool): Bool
-  ?a
+MaybeBool.is_none(a: MaybeBool): Bool
+  Bool.neg(MaybeBool.is_some(a))
     
 // Returns true if Maybe is some
-is_some(a: MaybeBool): Bool
-  ?b
+MaybeBool.is_some(a: MaybeBool): Bool
+  case a {
+    none: Bool.false
+    some: Bool.true
+  }
 
 // Returns true if both inputs are identical
 // eql(MaybeBool.none,             MaybeBool.none            ) -> true
 // eql(MaybeBool.some(Bool.false), MaybeBool.none            ) -> false
 // eql(MaybeBool.some(Bool.true),  MaybeBool.some(Bool.false)) -> false
 // eql(MaybeBool.some(Bool.false), MaybeBool.some(Bool.false)) -> true
-eql(a: MaybeBool, b: MaybeBool): Bool
-  ?c
+MaybeBool.eql(a: MaybeBool, b: MaybeBool): Bool
+  case a b {
+    none none: Bool.true
+    some some: Bool.eql(a.value, b.value)
+  } default Bool.false
 
 // Returns the value inside the MaybeBool.
 // If there is no value contained, returns v instead
-extract(a: MaybeBool, v: Bool): Bool
-  ?d
+MaybeBool.extract(a: MaybeBool, v: Bool): Bool
+  case a {
+    none: v
+    some: a.value
+  }
 
 // Create a MaybeBool from a Boolean
 // create(Bool.false) -> MaybeBool(Bool.false)
-create(a:Bool): MaybeBool
-  ?e
+MaybeBool.create(a: Bool): MaybeBool
+  MaybeBool.some(a)
 
 // Returns the first input that is a MaybeBool.some
 // Returns MaybeBool.none if both are MaybeBool.none
-or(a: MaybeBool, b: MaybeBool) : MaybeBool 
-  ?f
+MaybeBool.or(a: MaybeBool, b: MaybeBool) : MaybeBool 
+  case a {
+    some: a
+    none: b
+  }
+
+MaybeBool.test(message: String, expected: MaybeBool, received: MaybeBool): String
+  case MaybeBool.eql(expected, received) {
+    true: String.concat(message, ": Success")
+    false: String.concat(message, ": ERROR")
+  }
+
+ex_01: IO(Unit)
+  IO {
+    IO.print("-- is_none --")
+    IO.print(Bool.test("wen none",        Bool.true,  MaybeBool.is_none(MaybeBool.none)))
+    IO.print(Bool.test("wen some(false)", Bool.false, MaybeBool.is_none(MaybeBool.some(Bool.false))))
+    IO.print(Bool.test("wen some(true)",  Bool.false, MaybeBool.is_none(MaybeBool.some(Bool.true))))
+    IO.print("-------------\n")
+
+    IO.print("-- is_some --")
+    IO.print(Bool.test("wen none",        Bool.false, MaybeBool.is_some(MaybeBool.none)))
+    IO.print(Bool.test("wen some(false)", Bool.true,  MaybeBool.is_some(MaybeBool.some(Bool.false))))
+    IO.print(Bool.test("wen some(true)",  Bool.true,  MaybeBool.is_some(MaybeBool.some(Bool.true))))
+    IO.print("-------------\n")
+
+    IO.print("-- eql --")
+    IO.print(Bool.test("wen none none",               Bool.true,  MaybeBool.eql(MaybeBool.none,             MaybeBool.none)))
+    IO.print(Bool.test("wen none some(false)",        Bool.false, MaybeBool.eql(MaybeBool.none,             MaybeBool.some(Bool.false))))
+    IO.print(Bool.test("wen none some(true)",         Bool.false, MaybeBool.eql(MaybeBool.none,             MaybeBool.some(Bool.true))))
+    IO.print(Bool.test("wen some(false) none",        Bool.false, MaybeBool.eql(MaybeBool.some(Bool.false), MaybeBool.none)))
+    IO.print(Bool.test("wen some(true) none",         Bool.false, MaybeBool.eql(MaybeBool.some(Bool.true),  MaybeBool.none)))
+    IO.print(Bool.test("wen some(false) some(false)", Bool.true,  MaybeBool.eql(MaybeBool.some(Bool.false), MaybeBool.some(Bool.false))))
+    IO.print(Bool.test("wen some(false) some(true)",  Bool.false, MaybeBool.eql(MaybeBool.some(Bool.false), MaybeBool.some(Bool.true))))
+    IO.print(Bool.test("wen some(true) some(false)",  Bool.false, MaybeBool.eql(MaybeBool.some(Bool.true),  MaybeBool.some(Bool.false))))
+    IO.print(Bool.test("wen some(true) some(true)",   Bool.true,  MaybeBool.eql(MaybeBool.some(Bool.true),  MaybeBool.some(Bool.true))))
+    IO.print("-------------\n")
+
+    IO.print("-- extract --")
+    IO.print(Bool.test("wen none false",        Bool.false, MaybeBool.extract(MaybeBool.none,             false)))
+    IO.print(Bool.test("wen none true",         Bool.true,  MaybeBool.extract(MaybeBool.none,             true)))
+    IO.print(Bool.test("wen some(false) false", Bool.false, MaybeBool.extract(MaybeBool.some(Bool.false), false)))
+    IO.print(Bool.test("wen some(false) true",  Bool.false, MaybeBool.extract(MaybeBool.some(Bool.false), true)))
+    IO.print(Bool.test("wen some(true) false",  Bool.true,  MaybeBool.extract(MaybeBool.some(Bool.true),  false)))
+    IO.print(Bool.test("wen some(true) true",   Bool.true,  MaybeBool.extract(MaybeBool.some(Bool.true),  true)))
+    IO.print("-------------\n")
+
+    IO.print("-- create --")
+    IO.print(MaybeBool.test("wen false", MaybeBool.some(Bool.false), MaybeBool.create(Bool.false)))
+    IO.print(MaybeBool.test("wen true",  MaybeBool.some(Bool.true),  MaybeBool.create(Bool.true)))
+    IO.print("-------------\n")
+
+    IO.print("-- or --")
+    IO.print(MaybeBool.test("wen none none",               MaybeBool.none,        MaybeBool.or(MaybeBool.none,             MaybeBool.none)))
+    IO.print(MaybeBool.test("wen none some(false)",        MaybeBool.some(false), MaybeBool.or(MaybeBool.none,             MaybeBool.some(Bool.false))))
+    IO.print(MaybeBool.test("wen none some(true)",         MaybeBool.some(true),  MaybeBool.or(MaybeBool.none,             MaybeBool.some(Bool.true))))
+    IO.print(MaybeBool.test("wen some(false) none",        MaybeBool.some(false), MaybeBool.or(MaybeBool.some(Bool.false), MaybeBool.none)))
+    IO.print(MaybeBool.test("wen some(true) none",         MaybeBool.some(true),  MaybeBool.or(MaybeBool.some(Bool.true),  MaybeBool.none)))
+    IO.print(MaybeBool.test("wen some(false) some(false)", MaybeBool.some(false), MaybeBool.or(MaybeBool.some(Bool.false), MaybeBool.some(Bool.false))))
+    IO.print(MaybeBool.test("wen some(false) some(true)",  MaybeBool.some(false), MaybeBool.or(MaybeBool.some(Bool.false), MaybeBool.some(Bool.true))))
+    IO.print(MaybeBool.test("wen some(true) some(false)",  MaybeBool.some(true),  MaybeBool.or(MaybeBool.some(Bool.true),  MaybeBool.some(Bool.false))))
+    IO.print(MaybeBool.test("wen some(true) some(true)",   MaybeBool.some(true),  MaybeBool.or(MaybeBool.some(Bool.true),  MaybeBool.some(Bool.true))))
+    IO.print("-------------\n")
+
+    IO.print("UwU")
+  }

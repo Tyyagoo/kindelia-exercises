@@ -7,60 +7,131 @@ type Bool {
 
 // Is true
 // Returns true if input is true
-is_true(a: Bool): Bool
-
-  ?i2
+is_true(b: Bool): Bool
+  b
 
 // Is false
 // Returns true if input is false
-is_false(a: Bool): Bool
-
-  ?i
+is_false(b: Bool): Bool
+  neg(b)
 
 // Negation
 // Returns the opposite of a Bool
 neg(b: Bool): Bool 
-
-  ?n
+  case b {
+    true: Bool.false
+    false: Bool.true
+  }
 
 // And
 // Returns true if both inputs are true
 and(a: Bool, b: Bool): Bool
-
-  ?a
+  case a {
+    true: b
+    false: Bool.false
+  }
 
 // Or
 // Returs true if any input is true
 or(a: Bool, b: Bool): Bool
-
-  ?o
+  case a {
+    true: Bool.true
+    false: b
+  }
 
 // Equal
 // Returs true if both inputs are identical
 eql(a: Bool, b: Bool): Bool
-
-  ?e
+  case a {
+    true: and(a, b)
+    false: nor(a, b)
+  }
 
 // Xor
 // Returns true if both inputs are different
 xor(a: Bool, b: Bool): Bool
-
-  ?x
+  neg(eql(a, b))
 
 // Nor
 // Returns true if both inputs are false
 nor(a: Bool, b: Bool): Bool
-
-  ?n2
+  neg(or(a, b))
 
 // Nand
 // Returns false only if both inputs are true
 nand(a: Bool, b: Bool): Bool
-
-  ?n3
+  neg(and(a, b))
 
 // Xnor
 // Returns true if both inputs are identical
 xnor(a: Bool, b: Bool): Bool
+  eql(a, b)
 
-  ?x2
+ex_00: IO(Unit)
+  IO {
+    IO.print("-- is_true --")
+    IO.print(test("wen true",  Bool.true,  is_true(Bool.true)))
+    IO.print(test("wen false", Bool.false, is_true(Bool.false)))
+    IO.print("-------------\n")
+
+    IO.print("-- is_false --")
+    IO.print(test("wen true",  Bool.false, is_false(Bool.true)))
+    IO.print(test("wen false", Bool.true,  is_false(Bool.false)))
+    IO.print("-------------\n")
+
+    IO.print("-- neg --")
+    IO.print(test("wen true",  Bool.false, neg(Bool.true)))
+    IO.print(test("wen false", Bool.true,  neg(Bool.false)))
+    IO.print("-------------\n")
+
+    IO.print("-- and --")
+    IO.print(test("wen false false", Bool.false, and(Bool.false, Bool.false)))
+    IO.print(test("wen false true",  Bool.false, and(Bool.false, Bool.true)))
+    IO.print(test("wen true false",  Bool.false, and(Bool.true,  Bool.false)))
+    IO.print(test("wen true true",   Bool.true,  and(Bool.true,  Bool.true)))
+    IO.print("-------------\n")
+
+    IO.print("-- or --")
+    IO.print(test("wen false false", Bool.false, or(Bool.false, Bool.false)))
+    IO.print(test("wen false true",  Bool.true,  or(Bool.false, Bool.true)))
+    IO.print(test("wen true false",  Bool.true,  or(Bool.true,  Bool.false)))
+    IO.print(test("wen true true",   Bool.true,  or(Bool.true,  Bool.true)))
+    IO.print("-------------\n")
+
+    IO.print("-- eql --")
+    IO.print(test("wen false false", Bool.true,  eql(Bool.false, Bool.false)))
+    IO.print(test("wen false true",  Bool.false, eql(Bool.false, Bool.true)))
+    IO.print(test("wen true false",  Bool.false, eql(Bool.true,  Bool.false)))
+    IO.print(test("wen true true",   Bool.true,  eql(Bool.true,  Bool.true)))
+    IO.print("-------------\n")
+
+    IO.print("-- xor --")
+    IO.print(test("wen false false", Bool.false, xor(Bool.false, Bool.false)))
+    IO.print(test("wen false true",  Bool.true,  xor(Bool.false, Bool.true)))
+    IO.print(test("wen true false",  Bool.true,  xor(Bool.true,  Bool.false)))
+    IO.print(test("wen true true",   Bool.false, xor(Bool.true,  Bool.true)))
+    IO.print("-------------\n")
+
+    IO.print("-- nor --")
+    IO.print(test("wen false false", Bool.true,  nor(Bool.false, Bool.false)))
+    IO.print(test("wen false true",  Bool.false, nor(Bool.false, Bool.true)))
+    IO.print(test("wen true false",  Bool.false, nor(Bool.true,  Bool.false)))
+    IO.print(test("wen true true",   Bool.false, nor(Bool.true,  Bool.true)))
+    IO.print("-------------\n")
+
+    IO.print("-- nand --")
+    IO.print(test("wen false false", Bool.true,  nand(Bool.false, Bool.false)))
+    IO.print(test("wen false true",  Bool.true,  nand(Bool.false, Bool.true)))
+    IO.print(test("wen true false",  Bool.true,  nand(Bool.true,  Bool.false)))
+    IO.print(test("wen true true",   Bool.false, nand(Bool.true,  Bool.true)))
+    IO.print("-------------\n")
+
+    IO.print("-- xnor --")
+    IO.print(test("wen false false", Bool.true,  xnor(Bool.false, Bool.false)))
+    IO.print(test("wen false true",  Bool.false, xnor(Bool.false, Bool.true)))
+    IO.print(test("wen true false",  Bool.false, xnor(Bool.true,  Bool.false)))
+    IO.print(test("wen true true",   Bool.true,  xnor(Bool.true,  Bool.true)))
+    IO.print("-------------\n")
+
+    IO.print("UwU")
+  }

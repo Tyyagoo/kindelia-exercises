@@ -5,39 +5,135 @@ type PairBool {
 }
 
 // Returns the first element of a pair
-fst(pair: PairBool): Bool
-  ?a
+PairBool.fst(pair: PairBool): Bool
+  case pair {
+    new: pair.fst
+  }
 
 // Returns the second element of a pair
-snd(pair: PairBool): Bool
-  ?b
+PairBool.snd(pair: PairBool): Bool
+  case pair {
+    new: pair.snd
+  }
 
 // Returns true if both elements of a PairBool are identical
-eql_elements(a: PairBool): Bool 
-  ?c
+PairBool.eql_elements(a: PairBool): Bool 
+  case a {
+    new: Bool.eql(a.fst, a.snd)
+  }
   
-// Returns true if both Pairs are equal 
-// eql(PairBool.new(false, false), PairBool.new(true, true)) -> false 
-// eql(PairBool.new(true, false), PairBool.new(true, false)) -> true
-eql(a: PairBool, b: PairBool): Bool
-  ?f
+// Returns true if both Pairs are equal
+PairBool.eql(a: PairBool, b: PairBool): Bool
+  case a b {
+    new new: Bool.and(Bool.eql(a.fst, b.fst), Bool.eql(a.snd, b.snd))
+  }
 
 // Returns true if both Pairs are different
-// not_eql(PairBool.new(false, false), PairBool.new(true, true)) -> true 
-// not_eql(PairBool.new(true, false), PairBool.new(true, false)) -> false
-not_eql(a: PairBool, b: PairBool): Bool
-  ?f
-  
-// Creates a PairBool from 2 Booleans
-create(a: Bool, b: Bool): PairBool
-  ?h
+PairBool.not_eql(a: PairBool, b: PairBool): Bool
+  Bool.neg(PairBool.eql(a, b))
 
-// Inverts the values of a PairBool
-// neg(PairBool.new(false, false)) -> PairBool.new(true, true)
-// neg(PairBool.new(false, true)) -> PairBool.new(true, false)
-neg(pair: PairBool): PairBool
-  ?i
+// Negates the values of a PairBool
+PairBool.neg(pair: PairBool): PairBool
+  case pair {
+    new: PairBool.new(Bool.neg(pair.fst), Bool.neg(pair.snd))
+  }
 
 // Inverts the 2 elements of a PairBool
-swap(pair: PairBool): PairBool 
-  ?k
+PairBool.swap(pair: PairBool): PairBool 
+  case pair {
+    new: PairBool.new(pair.snd, pair.fst)
+  }
+
+PairBool.test(msg: String, exp: PairBool, rec: PairBool): IO(Unit)
+  let out = case PairBool.eql(exp, rec) {
+    true: String.concat(msg, ": Success")
+    false: String.concat(msg, ": ERROR")
+  }
+
+  IO {
+    IO.print(out)
+  }
+
+ex_02: IO(Unit)
+  IO {
+    IO.print("--- fst ---")
+    Bool.test("wen (false false)", Bool.false, PairBool.fst(PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (false true)",  Bool.false, PairBool.fst(PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (true false)",  Bool.true,  PairBool.fst(PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (true true)",   Bool.true,  PairBool.fst(PairBool.new(Bool.true,  Bool.true)))
+    IO.print("-----------\n")
+
+    IO.print("--- snd ---")
+    Bool.test("wen (false false)", Bool.false, PairBool.snd(PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (false true)",  Bool.true,  PairBool.snd(PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (true false)",  Bool.false, PairBool.snd(PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (true true)",   Bool.true,  PairBool.snd(PairBool.new(Bool.true,  Bool.true)))
+    IO.print("-----------\n")
+
+    IO.print("--- eql_elements ---")
+    Bool.test("wen (false false)", Bool.true,  PairBool.eql_elements(PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (false true)",  Bool.false, PairBool.eql_elements(PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (true false)",  Bool.false, PairBool.eql_elements(PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (true true)",   Bool.true,  PairBool.eql_elements(PairBool.new(Bool.true,  Bool.true)))
+    IO.print("--------------------\n")
+
+    IO.print("--- eql ---")
+    Bool.test("wen (false false) (false false)", Bool.true,  PairBool.eql(PairBool.new(Bool.false, Bool.false), PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (false false) (false true)",  Bool.false, PairBool.eql(PairBool.new(Bool.false, Bool.false), PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (false false) (true false)",  Bool.false, PairBool.eql(PairBool.new(Bool.false, Bool.false), PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (false false) (true true)",   Bool.false, PairBool.eql(PairBool.new(Bool.false, Bool.false), PairBool.new(Bool.true,  Bool.true)))
+
+    Bool.test("wen (false true) (false false)",  Bool.false, PairBool.eql(PairBool.new(Bool.false, Bool.true),  PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (false true) (false true)",   Bool.true,  PairBool.eql(PairBool.new(Bool.false, Bool.true),  PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (false true) (true false)",   Bool.false, PairBool.eql(PairBool.new(Bool.false, Bool.true),  PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (false true) (true true)",    Bool.false, PairBool.eql(PairBool.new(Bool.false, Bool.true),  PairBool.new(Bool.true,  Bool.true)))
+
+    Bool.test("wen (true false) (false false)",  Bool.false, PairBool.eql(PairBool.new(Bool.true,  Bool.false), PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (true false) (false true)",   Bool.false, PairBool.eql(PairBool.new(Bool.true,  Bool.false), PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (true false) (true false)",   Bool.true,  PairBool.eql(PairBool.new(Bool.true,  Bool.false), PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (true false) (true true)",    Bool.false, PairBool.eql(PairBool.new(Bool.true,  Bool.false), PairBool.new(Bool.true,  Bool.true)))
+
+    Bool.test("wen (true true) (false false)",   Bool.false, PairBool.eql(PairBool.new(Bool.true,  Bool.true),  PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (true true) (false true)",    Bool.false, PairBool.eql(PairBool.new(Bool.true,  Bool.true),  PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (true true) (true false)",    Bool.false, PairBool.eql(PairBool.new(Bool.true,  Bool.true),  PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (true true) (true true)",     Bool.true,  PairBool.eql(PairBool.new(Bool.true,  Bool.true),  PairBool.new(Bool.true,  Bool.true)))
+    IO.print("-----------\n")
+
+    IO.print("--- not_eql ---")
+    Bool.test("wen (false false) (false false)", Bool.false, PairBool.not_eql(PairBool.new(Bool.false, Bool.false), PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (false false) (false true)",  Bool.true,  PairBool.not_eql(PairBool.new(Bool.false, Bool.false), PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (false false) (true false)",  Bool.true,  PairBool.not_eql(PairBool.new(Bool.false, Bool.false), PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (false false) (true true)",   Bool.true,  PairBool.not_eql(PairBool.new(Bool.false, Bool.false), PairBool.new(Bool.true,  Bool.true)))
+
+    Bool.test("wen (false true) (false false)", Bool.true,   PairBool.not_eql(PairBool.new(Bool.false, Bool.true),  PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (false true) (false true)",  Bool.false,  PairBool.not_eql(PairBool.new(Bool.false, Bool.true),  PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (false true) (true false)",  Bool.true,   PairBool.not_eql(PairBool.new(Bool.false, Bool.true),  PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (false true) (true true)",   Bool.true,   PairBool.not_eql(PairBool.new(Bool.false, Bool.true),  PairBool.new(Bool.true,  Bool.true)))
+ 
+    Bool.test("wen (true false) (false false)", Bool.true,   PairBool.not_eql(PairBool.new(Bool.true,  Bool.false), PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (true false) (false true)",  Bool.true,   PairBool.not_eql(PairBool.new(Bool.true,  Bool.false), PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (true false) (true false)",  Bool.false,  PairBool.not_eql(PairBool.new(Bool.true,  Bool.false), PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (true false) (true true)",   Bool.true,   PairBool.not_eql(PairBool.new(Bool.true,  Bool.false), PairBool.new(Bool.true,  Bool.true)))
+
+    Bool.test("wen (true true) (false false)", Bool.true,    PairBool.not_eql(PairBool.new(Bool.true,  Bool.true),  PairBool.new(Bool.false, Bool.false)))
+    Bool.test("wen (true true) (false true)",  Bool.true,    PairBool.not_eql(PairBool.new(Bool.true,  Bool.true),  PairBool.new(Bool.false, Bool.true)))
+    Bool.test("wen (true true) (true false)",  Bool.true,    PairBool.not_eql(PairBool.new(Bool.true,  Bool.true),  PairBool.new(Bool.true,  Bool.false)))
+    Bool.test("wen (true true) (true true)",   Bool.false,   PairBool.not_eql(PairBool.new(Bool.true,  Bool.true),  PairBool.new(Bool.true,  Bool.true)))
+    IO.print("---------------\n")
+
+    IO.print("--- neg ---")
+    PairBool.test("wen (false false)", PairBool.new(Bool.true, Bool.true),   PairBool.neg(PairBool.new(Bool.false, Bool.false)))
+    PairBool.test("wen (false true)",  PairBool.new(Bool.true, Bool.false),  PairBool.neg(PairBool.new(Bool.false, Bool.true)))
+    PairBool.test("wen (true false)",  PairBool.new(Bool.false, Bool.true),  PairBool.neg(PairBool.new(Bool.true,  Bool.false)))
+    PairBool.test("wen (true true)",   PairBool.new(Bool.false, Bool.false), PairBool.neg(PairBool.new(Bool.true,  Bool.true)))
+    IO.print("-----------\n")
+  
+    IO.print("--- swap ---")
+    PairBool.test("wen (false false)", PairBool.new(Bool.false, Bool.false), PairBool.swap(PairBool.new(Bool.false, Bool.false)))
+    PairBool.test("wen (false true)",  PairBool.new(Bool.true, Bool.false),  PairBool.swap(PairBool.new(Bool.false, Bool.true)))
+    PairBool.test("wen (true false)",  PairBool.new(Bool.false, Bool.true),  PairBool.swap(PairBool.new(Bool.true,  Bool.false)))
+    PairBool.test("wen (true true)",   PairBool.new(Bool.true, Bool.true),   PairBool.swap(PairBool.new(Bool.true,  Bool.true)))
+    IO.print("------------\n")
+
+    IO.print("UwU")
+  }

@@ -1,42 +1,84 @@
-// Advanced exercises involving recursion
 
 type Nat {
   zero
   succ(pred: Nat)
 }
 
+// Basic Exercises involving Nats
+
+// Increment
+// 2 + 1 = 3
+// 0 + 1 = 1
+inc(a: Nat): Nat  
+  Nat.succ(a)
+
+// Decrement
+// 2 - 1 = 1
+// 0 - 1 = 0
+dec(a: Nat): Nat
+  case a {
+    zero: 0
+    succ: a.pred
+  }
+
+is_zero(a: Nat): Bool
+  case a {
+    zero: Bool.true
+    succ: Bool.false
+  }
+
+// Advanced exercises involving recursion
+
 // Doubles a number
 dbl(a: Nat): Nat // double
-
-  ?b
+  add(a, a)
 
 // Addition
 add(a: Nat, b: Nat): Nat
-
-  ?a
+  case b {
+    zero: a
+    succ: case a {
+      zero: b
+      succ: add(Nat.succ(a), b.pred)
+    }
+  }
 
 // Multiplication
 mul(a: Nat, b: Nat): Nat
-  
-  ?m
+  case a {
+    zero: 0
+    succ: case b {
+      zero: 0
+      succ: add(a, mul(a, b.pred))
+    }
+  }
 
 // Subtraction
 // 4 - 5 = 0
 // 5 - 4 = 1
 sub(a: Nat, b: Nat): Nat
-
-  ?s
+  case a {
+    zero: a
+    succ: case b {
+      zero: a
+      succ: sub(a.pred, b.pred)
+    }
+  }
 
 // Factorial
 // 4! = 24
 fac(a: Nat): Nat 
-  
-  ?f
+  case a {
+    zero: 1
+    succ: mul(a, fac(a.pred))
+  }
 
 // Equal
 eql(a: Nat, b: Nat): Bool // Given 2 numbers, it returns true if the 2 are the same and false if they are different.
-  
-  ?e 
+  case a b {
+    zero zero: Bool.true
+    succ succ: eql(a.pred, b.pred)
+  } default Bool.false
 
 // Do not use the "not" function to create the functions below
 
@@ -44,29 +86,37 @@ eql(a: Nat, b: Nat): Bool // Given 2 numbers, it returns true if the 2 are the s
 // 2 > 1 = True
 // 3 > 3 = False
 gtn(a: Nat, b: Nat): Bool // if A > B == True else false
-  
-  ?g
+  case a b {
+    succ zero: Bool.true
+    succ succ: gtn(a.pred, b.pred)
+  } default Bool.false
 
 // Lower than
 // 1 < 2 = True
 // 3 < 3 = False
 ltn(a: Nat, b: Nat): Bool // if A > B == False else true 
-  
-  ?l
+  case a b {
+    zero succ: Bool.true
+    succ succ: ltn(a.pred, b.pred)
+  } default Bool.false
 
 // Minimum
 // min(2, 3) = 2
 // min(4, 1) = 1
 min(a: Nat, b: Nat): Nat // if A < B then A else B
-  
-  ?m2
+  case ltn(a, b) {
+    true: a
+    false: b
+  }
 
 // Maximum
 // max(2, 3) = 3
 // max(4, 1) = 4
 max(a: Nat, b: Nat): Nat // if A > B then A else B
-  
-  ?m3
+  case gtn(a, b) {
+    true: a
+    false: b
+  }
 
 
 // Divides a number by two
@@ -74,12 +124,142 @@ max(a: Nat, b: Nat): Nat // if A > B then A else B
 // 5 / 2 = 2
 // 1 / 2 = 0
 hlf(a: Nat): Nat
-  ?h
+  div(a, 2)
 
 // Division
 // 1 / 2 = 0
 // x / 0 = 0
 // 5 / 2 = 2
 div(a: Nat, b: Nat): Nat // division
+  let any_zero = Bool.or(is_zero(a), is_zero(b))
+  case any_zero {
+    true: 0
+    false: case ltn(a, b) {
+      true: 0
+      false:
+        let new_a = sub(a, b)
+        Nat.succ(div(new_a, b))
+    }
+  }
+
+Nat.test(msg: String, exp: Nat, rec: Nat): IO(Unit)
+  let out = case Nat.eql(exp, rec) {
+    true: msg | ": Success"
+    false: msg | ": ERROR"
+  }
+
+  IO {
+    IO.print(out)
+  }
+
+Nat.show_padded(padding: Nat, a: Nat): String
+  String.pad_left(padding, '0', Nat.show(a)) | " "
+
+Nat.mul_dump(a: Nat): IO(Unit)
+  let numbers = List.range.nat(10)
+  let multiples = List.map<Nat, Nat>(mul(a), numbers)
+  let results = List.map<Nat, String>(Nat.show_padded(2), multiples)
+
+  IO {
+    IO.put_string(Nat.show_padded(2, a))
+    List.for.io<String>(results, IO.put_string)
+    IO.print("")
+  }
   
-  ?d
+ex_04: IO(Unit)
+  IO {
+    IO.print("--- inc ---")
+    Nat.test("wen zero",       1, inc(0))
+    Nat.test("wen succ(zero)", 2, inc(1))
+    IO.print("-----------\n")
+
+    IO.print("--- dec ---")
+    Nat.test("wen zero",       0, dec(0))
+    Nat.test("wen succ(zero)", 0, dec(1))
+    IO.print("-----------\n")
+
+    IO.print("--- is_zero ---")
+    Bool.test("wen zero",       Bool.true,  is_zero(0))
+    Bool.test("wen succ(zero)", Bool.false, is_zero(1))
+    IO.print("---------------\n")
+
+    IO.print("--- dbl ---")
+    Nat.test("wen 0",   0, dbl(0))
+    Nat.test("wen 1",   2, dbl(1))
+    Nat.test("wen 10", 20, dbl(10))
+    IO.print("-----------\n")
+
+    IO.print("--- add ---")
+    Nat.test("wen 0 + 0", 0, add(0, 0))
+    Nat.test("wen 1 + 0", 1, add(1, 0))
+    Nat.test("wen 5 + 3", 8, add(5, 3))
+    IO.print("-----------\n")
+
+    IO.print("--- sub ---")
+    Nat.test("wen 1 - 2", 0, sub(1, 2))
+    Nat.test("wen 1 - 0", 1, sub(1, 0))
+    Nat.test("wen 5 - 3", 2, sub(5, 3))
+    IO.print("-----------\n")   
+    IO.print("--- mul ---")
+    IO.print("XX 00 01 02 03 04 05 06 07 08 09")
+    let numbers = List.range.nat(10)
+    List.for.io<Nat>(numbers, Nat.mul_dump)
+    // IO.print("Big nat: " | Nat.show(mul(98457, 87357))) // segfault uWu
+    IO.print("-----------\n")
+
+    IO.print("--- fac ---")
+    Nat.test("wen 0", 1,   fac(0))
+    Nat.test("wen 1", 1,   fac(1))
+    Nat.test("wen 2", 2,   fac(2))
+    Nat.test("wen 3", 6,   fac(3))
+    Nat.test("wen 4", 24,  fac(4))
+    Nat.test("wen 5", 120, fac(5))
+    // IO.print("Big fat: " | Nat.show(fac(20))) // run-forever uWu
+    IO.print("-----------\n")
+
+    IO.print("--- eql ---")
+    Bool.test("wen 0 = 0", Bool.true,  eql(0, 0))
+    Bool.test("wen 3 = 1", Bool.false, eql(3, 1))
+    Bool.test("wen 2 = 5", Bool.false, eql(2, 5))
+    IO.print("-----------\n")
+
+    IO.print("--- gtn ---")
+    Bool.test("wen 0 > 0", Bool.false, gtn(0, 0))
+    Bool.test("wen 3 > 1", Bool.true,  gtn(3, 1))
+    Bool.test("wen 2 > 5", Bool.false, gtn(2, 5))
+    IO.print("-----------\n")
+
+    IO.print("--- ltn ---")
+    Bool.test("wen 0 < 0", Bool.false, ltn(0, 0))
+    Bool.test("wen 3 < 1", Bool.false, ltn(3, 1))
+    Bool.test("wen 2 < 5", Bool.true,  ltn(2, 5))
+    IO.print("-----------\n")
+
+    IO.print("--- max ---")
+    Nat.test("wen 2  3", 3, max(2, 3))
+    Nat.test("wen 4  1", 4, max(4, 1))
+    IO.print("-----------\n")
+
+    IO.print("--- min ---")
+    Nat.test("wen 2  3", 2, min(2, 3))
+    Nat.test("wen 4  1", 1, min(4, 1))
+    IO.print("-----------\n")
+
+    IO.print("--- hlf ---")
+    Nat.test("wen 0", 0, hlf(0))
+    Nat.test("wen 1", 0, hlf(1))
+    Nat.test("wen 2", 1, hlf(2))
+    Nat.test("wen 5", 2, hlf(5))
+    IO.print("-----------\n")
+
+    IO.print("--- div ---")
+    Nat.test("wen 0 0",      0, div(0, 0))
+    Nat.test("wen 10 0",     0, div(10, 0))
+    Nat.test("wen 0 10",     0, div(0, 10))
+    Nat.test("wen 2 3",      0, div(2, 3))
+    Nat.test("wen 10 5",     2, div(10, 5))
+    Nat.test("wen 1000 5", 200, div(1000, 5))
+    IO.print("-----------\n")
+
+    IO.print("UwU")
+  }

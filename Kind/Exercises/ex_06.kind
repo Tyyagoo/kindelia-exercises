@@ -18,17 +18,15 @@ type Neg {
   pred(succ: Neg)
 }
 
-// example
-// -0 does not exist
+// Functions for negative numbers to help testing 
+// Do not edit those functions
+
 // Increments a negative number by one
 neg_succ(n: Neg): Neg
   case n { 
     one:  Neg.one
     pred: n.succ
   }
-
-// Functions for negative numbers to help testing 
-// Do not edit those functions
 
 // Converts Neg to Nat
 neg_to_nat(n: Neg): Nat
@@ -62,6 +60,13 @@ nat_to_pos(n: Nat): Pos
     succ: Pos.succ(nat_to_pos(n.pred))
   }
 
+// Converts Int to Nat
+int_to_nat(n: Inte): Nat
+  case n {
+    neg: neg_to_nat(n.num)
+    pos: pos_to_nat(n.num)
+  }
+
 // Converts Pos to String
 pos_show(n: Pos): String
   "+"|Nat.show(pos_to_nat(n))
@@ -90,6 +95,23 @@ int(sign: Bool, num: Nat): Inte
       }
   }
 
+// Returns the absolute value of an Integer
+abs(n: Inte): Inte
+  case n {
+    pos: n
+    neg: int(true, neg_to_nat(n.num))
+  }
+
+// Returns true if two integers have the same sign, false otherwise
+eql_sign(a: Inte, b: Inte): Bool
+  case a b {
+    pos pos: Bool.true
+    neg neg: Bool.true
+  } default Bool.false
+
+// Returns true if two integers have the same absolute value (ignores signal)
+eql_mod(a: Inte, b: Inte): Bool
+  Nat.eql(int_to_nat(a), int_to_nat(b))
 
 // Exercises:
 
@@ -98,43 +120,103 @@ int(sign: Bool, num: Nat): Inte
 // int(false, 2)     = -1
 // int(true,  2)     = +3
 inc(a: Inte): Inte  
-  ?inc
+  case a {
+    pos: Inte.pos(Pos.succ(a.num))
+    neg: case a.num {
+      one: Inte.pos(Pos.zero)
+      pred: Inte.neg(a.num.succ)
+    }
+  }
 
 // Decrements an Integer
 // int(false, 1) = -2
 // int(true,  2) = +1
 // int(true,  0) = -1
 dec(a: Inte): Inte
-  ?dec
+  case a {
+    neg: Inte.neg(Neg.pred(a.num))
+    pos: case a.num {
+      zero: Inte.neg(Neg.one)
+      succ: Inte.pos(a.num.pred)
+    }
+  }
 
 // Doubles an Integer
 // int(false, 4) = -8
 // int(false, 1) = -2
 // int(true,  2) = +4
-dbl(a: Inte): Inte 
-  ?dbl
+dbl(a: Inte): Inte
+  let dn = Nat.double(int_to_nat(a))
+  case a {
+    neg: int(false, dn)
+    pos: int(true,  dn)
+  }
 
 // Adds two Integers
 // int(false, 4) + int(false, 2) = -6
 // int(false, 4) + int(true,  2) = -2
 add(a: Inte, b: Inte): Inte
-  ?add
+  case a b {
+    pos pos:
+      // a + b
+      let sum = Nat.add(int_to_nat(a), int_to_nat(b))
+      Inte.pos(nat_to_pos(sum))
+    neg neg:
+      // -a + (-b) --> -(a + b)
+      let sum = Nat.add(int_to_nat(a), int_to_nat(b))
+      Inte.neg(nat_to_neg(sum))
+    pos neg:
+      // a + (-b) --> a - b
+      sub(a, abs(b))
+    neg pos:
+      // -a + b --> b - a
+      sub(b, abs(a))
+  }
 
 // Multiplies two Integers
 // int(false, 2) * int(true, 3)  = -6
 // int(false, 4) * int(false, 5) = +20
 mul(a: Inte, b: Inte): Inte
-  ?mul
+  let abs_mul = Nat.mul(int_to_nat(a), int_to_nat(b))
+  int(eql_sign(a, b), abs_mul)
 
 // Subtracts two Integers
 // int(false, 6) - int(false, 6) = +0
 // int(false, 4) - int(false, 6) = +2
 sub(a: Inte, b: Inte): Inte
-  ?sub
+  case a b {
+    pos pos:
+      // a - (+b) --> a - b
+      case ltn(a, b) {
+        false:
+          // if a >= b, result ∈ N
+          let diff = Nat.sub(int_to_nat(a), int_to_nat(b))
+          int(true, diff)
+        true:
+          // if b > a, result ∈ Z₋∗
+          let diff = Nat.sub(int_to_nat(b), int_to_nat(a))
+          int(false, diff)
+      }
+    neg neg:
+      // -a - (-b) --> b - a (basically the first case, but with values swapped)
+      sub(abs(b), abs(a))
+    pos neg:
+      // a - (-b) --> a + b
+      add(a, abs(b))
+    neg pos:
+      // -a - (+b) --> -a - b (negative sum)
+      add(a, mul(b, int(false, 1)))
+  }
 
 // Equal
 eql(a: Inte, b: Inte): Bool // Given two Integers, returns true if both are the same and false otherwise.
-  ?eql
+  // if arguments are lazy evaluated, this is better:
+  // Bool.and(eql_sign(a, b), eql_mod(a, b))
+
+  case eql_sign(a, b) {
+    false: Bool.false
+    true: eql_mod(a, b)
+  }
 
 
 // Greater than
@@ -143,25 +225,41 @@ eql(a: Inte, b: Inte): Bool // Given two Integers, returns true if both are the 
 // int(false, 2) > int(true,  0) = False
 // int(true,  0) > int(false, 2) = True
 gtn(a: Inte, b: Inte): Bool // if A > B then True else false
-  ?gtn
+  case a b {
+    pos neg: Bool.true
+    neg pos: Bool.false
+    pos pos: Nat.gtn(int_to_nat(a), int_to_nat(b))
+    neg neg: Bool.neg(Nat.gtn(int_to_nat(a), int_to_nat(b)))
+  }
 
 // Lower than
 // int(false, 1) < int(true,  0) = True
 // int(true,  0) < int(false, 1) = False
 ltn(a: Inte, b: Inte): Bool // if A > B then False else true
-  ?ltn
+  case a b {
+    pos neg: Bool.false
+    neg pos: Bool.true
+    pos pos: Nat.ltn(int_to_nat(a), int_to_nat(b))
+    neg neg: Bool.neg(Nat.ltn(int_to_nat(a), int_to_nat(b)))
+  }
 
 // Minimum
 // min(int(false, 1), int(true,  0)  = -1
 // min(int(false, 1), int(false, 3)) = -3
 min(a: Inte, b: Inte): Inte // if A < B then A else B
-  ?min
+  case ltn(a, b) {
+    false: b
+    true: a
+  }
 
 // Maximum
 // max(int(false, 1), int(true,  0)) = +0
 // max(int(false, 1), int(false, 3)) = -1
 max(a: Inte, b: Inte): Inte // if A > B then A else B
-  ?max
+  case gtn(a, b) {
+    false: b
+    true: a
+  }
 
 // Half
 // Divides an Integer by two
@@ -169,12 +267,177 @@ max(a: Inte, b: Inte): Inte // if A > B then A else B
 // int(false, 1) = +0
 // int(true,  6) = +3
 hlf(a: Inte): Inte
-  ?hlf
+  div(a, int(true, 2))
 
 // Division
 // int(true,  2)  / int(true,  2)  = +1
 // int(false, 8)  / int(true,  4)  = -2
 // int(false, 11) / int(false, 5)  = +2
 // int(true,  10) / int(false, 12) = +0
-div(a: Inte, b: Inte): Inte 
-  ?div
+div(a: Inte, b: Inte): Inte
+  let abs_div = Nat.div(int_to_nat(a), int_to_nat(b))
+  int(eql_sign(a, b), abs_div)
+
+Inte.test(msg: String, exp: Inte, rec: Inte): IO(Unit)
+  let out = case eql(exp, rec) {
+    true: msg | ": Success"
+    false: msg | ": Expected " | inte_show(exp) | "; Received " | inte_show(rec)
+  }
+
+  IO {
+    IO.print(out)
+  }
+
+ex_06: IO(Unit)
+  IO {
+
+    IO.print("--- inc ---")
+    Inte.test("wen +1", int(true,  2), inc(int(true,  1)))
+    Inte.test("wen +0", int(true,  1), inc(int(true,  0)))
+    Inte.test("wen -1", int(true,  0), inc(int(false, 1)))
+    Inte.test("wen -2", int(false, 1), inc(int(false, 2)))
+    IO.print("-----------\n")
+
+    IO.print("--- dec ---")
+    Inte.test("wen +2", int(true,  1), dec(int(true,  2)))
+    Inte.test("wen +1", int(true,  0), dec(int(true,  1)))
+    Inte.test("wen +0", int(false, 1), dec(int(true,  0)))
+    Inte.test("wen -1", int(false, 2), dec(int(false, 1)))
+    IO.print("-----------\n")
+
+    IO.print("--- dbl ---")
+    Inte.test("wen +2", int(true,  4), dbl(int(true,  2)))
+    Inte.test("wen +1", int(true,  2), dbl(int(true,  1)))
+    Inte.test("wen +0", int(true,  0), dbl(int(true,  0)))
+    Inte.test("wen -1", int(false, 2), dbl(int(false, 1)))
+    Inte.test("wen -2", int(false, 4), dbl(int(false, 2)))
+    IO.print("-----------\n")
+
+    IO.print("--- add ---")
+    Inte.test("wen +0 +0", int(true,  0), add(int(true,  0), int(true,  0)))
+    Inte.test("wen +2 +5", int(true,  7), add(int(true,  2), int(true,  5)))
+    Inte.test("wen -1 -1", int(false, 2), add(int(false, 1), int(false, 1)))
+    Inte.test("wen -2 -5", int(false, 7), add(int(false, 2), int(false, 5)))
+
+    Inte.test("wen +2 -1", int(true,  1), add(int(true,  2), int(false, 1)))
+    Inte.test("wen +2 -2", int(true,  0), add(int(true,  2), int(false, 2)))
+    Inte.test("wen +2 -5", int(false, 3), add(int(true,  2), int(false, 5)))
+    Inte.test("wen -2 +1", int(false, 1), add(int(false, 2), int(true,  1)))
+    Inte.test("wen -2 +2", int(true,  0), add(int(false, 2), int(true,  2)))
+    Inte.test("wen -2 +5", int(true,  3), add(int(false, 2), int(true,  5)))
+    IO.print("-----------\n")
+
+    IO.print("--- mul ---")
+    // (+) * (+) --> +
+    Inte.test("wen +5  +1", int(true,   5), mul(int(true,   5), int(true,  1)))
+    Inte.test("wen +7  +3", int(true,  21), mul(int(true,   7), int(true,  3)))
+    Inte.test("wen +10 +0", int(true,   0), mul(int(true,  10), int(true,  0)))
+
+    // (-) * (-) --> +
+    Inte.test("wen -5  -1", int(true,   5), mul(int(false,  5), int(false, 1)))
+    Inte.test("wen -7  -3", int(true,  21), mul(int(false,  7), int(false, 3)))
+    Inte.test("wen -10 -0", int(true,   0), mul(int(false, 10), int(false, 0)))
+
+    // (+) * (-) --> -
+    Inte.test("wen +5  -1", int(false,  5), mul(int(true,   5), int(false, 1)))
+    Inte.test("wen +7  -3", int(false, 21), mul(int(true,   7), int(false, 3)))
+    Inte.test("wen +10 -0", int(true,   0), mul(int(true,  10), int(false, 0)))
+
+    // (-) * (+) --> -
+    Inte.test("wen -5  +1", int(false,  5), mul(int(false,  5), int(true,  1)))
+    Inte.test("wen -7  +3", int(false, 21), mul(int(false,  7), int(true,  3)))
+    Inte.test("wen -10 +0", int(true,   0), mul(int(false, 10), int(true,  0)))
+    IO.print("-----------\n")
+
+    IO.print("--- sub ---")
+    // normal sub
+    Inte.test("wen +7 +3", int(true,  4), sub(int(true,  7), int(true,  3)))
+    Inte.test("wen +0 +0", int(true,  0), sub(int(true,  0), int(true,  0)))
+    Inte.test("wen +2 +5", int(false, 3), sub(int(true,  2), int(true,  5)))
+
+    // "inverse" sub
+    Inte.test("wen -1 -1", int(true,  0), sub(int(false, 1), int(false, 1)))
+    Inte.test("wen -2 -5", int(true,  3), sub(int(false, 2), int(false, 5)))
+    Inte.test("wen -7 -3", int(false, 4), sub(int(false, 7), int(false, 3)))
+
+    // pos sum
+    Inte.test("wen +2 -1", int(true,  3), sub(int(true,  2), int(false, 1)))
+    Inte.test("wen +2 -2", int(true,  4), sub(int(true,  2), int(false, 2)))
+    Inte.test("wen +2 -5", int(true,  7), sub(int(true,  2), int(false, 5)))
+
+    // neg sum
+    Inte.test("wen -2 +1", int(false, 3), sub(int(false, 2), int(true,  1)))
+    Inte.test("wen -2 +2", int(false, 4), sub(int(false, 2), int(true,  2)))
+    Inte.test("wen -2 +5", int(false, 7), sub(int(false, 2), int(true,  5)))
+    IO.print("-----------\n")
+
+    IO.print("--- gtn ---")
+    Bool.test("wen +0 +0", Bool.false, gtn(int(true,  0), int(true,  0)))
+    Bool.test("wen +1 +2", Bool.false, gtn(int(true,  1), int(true,  2)))
+    Bool.test("wen +2 +1", Bool.true,  gtn(int(true,  2), int(true,  1)))
+
+    Bool.test("wen -1 -2", Bool.true,  gtn(int(false, 1), int(false, 2)))
+    Bool.test("wen -2 -1", Bool.false, gtn(int(false, 2), int(false, 1)))
+
+    Bool.test("wen -1 +0", Bool.false, gtn(int(false, 1), int(true,  0)))
+    IO.print("-----------\n")
+
+    IO.print("--- ltn ---")
+    Bool.test("wen +0 +0", Bool.false, ltn(int(true,  0), int(true,  0)))
+    Bool.test("wen +1 +2", Bool.true,  ltn(int(true,  1), int(true,  2)))
+    Bool.test("wen +2 +1", Bool.false, ltn(int(true,  2), int(true,  1)))
+
+    Bool.test("wen -1 -2", Bool.false, ltn(int(false, 1), int(false, 2)))
+    Bool.test("wen -2 -1", Bool.true,  ltn(int(false, 2), int(false, 1)))
+
+    Bool.test("wen -1 +0", Bool.true,  ltn(int(false, 1), int(true,  0)))
+    IO.print("-----------\n")
+
+    IO.print("--- min ---")
+    // closest to 0
+    Inte.test("wen +0 +1", int(true,  0), min(int(true,  0), int(true,  1)))
+    Inte.test("wen +1 +0", int(true,  0), min(int(true,  1), int(true,  0)))
+
+    // furthest from zero
+    Inte.test("wen -2 -1", int(false, 2), min(int(false, 2), int(false, 1)))
+    Inte.test("wen -1 -2", int(false, 2), min(int(false, 1), int(false, 2)))
+
+    // always neg
+    Inte.test("wen +0 -1", int(false, 1), min(int(true,  0), int(false, 1)))
+    Inte.test("wen -1 +0", int(false, 1), min(int(false, 1), int(true,  0)))
+    IO.print("-----------\n")
+
+    IO.print("--- max ---")
+    // furthest from zero
+    Inte.test("wen +0 +1", int(true,  1), max(int(true,  0), int(true,  1)))
+    Inte.test("wen +1 +0", int(true,  1), max(int(true,  1), int(true,  0)))
+
+    // closest to zero
+    Inte.test("wen -2 -1", int(false, 1), max(int(false, 2), int(false, 1)))
+    Inte.test("wen -1 -2", int(false, 1), max(int(false, 1), int(false, 2)))
+
+    // always pos
+    Inte.test("wen +0 -1", int(true,  0), max(int(true,  0), int(false, 1)))
+    Inte.test("wen -1 +0", int(true,  0), max(int(false, 1), int(true,  0)))
+    IO.print("-----------\n")
+
+    IO.print("--- hlf ---")
+    Inte.test("wen -4", int(false, 2), hlf(int(false, 4)))
+    Inte.test("wen -1", int(true,  0), hlf(int(false, 1)))
+    Inte.test("wen +6", int(true,  3), hlf(int(true,  6)))
+    IO.print("-----------\n")
+
+    IO.print("--- div ---")
+    Inte.test("wen  +2  +2", int(true,  1), div(int(true,   2), int(true,   2)))
+    Inte.test("wen  -8  +4", int(false, 2), div(int(false,  8), int(true,   4)))
+    Inte.test("wen -11  -5", int(true,  2), div(int(false, 11), int(false,  5)))
+    Inte.test("wen +10 -12", int(true,  0), div(int(true, 10),  int(false, 12)))
+    IO.print("-----------\n")
+
+    // int(true,  2)  / int(true,  2)  = +1
+    // int(false, 8)  / int(true,  4)  = -2
+    // int(false, 11) / int(false, 5)  = +2
+    // int(true,  10) / int(false, 12) = +0
+
+    IO.print("UwU")
+  }

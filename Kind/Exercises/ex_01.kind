@@ -1,5 +1,6 @@
 // type MaybeBool
 // It maybe holds a Boolean inside it
+
 type MaybeBool { 
   none 
   some(value: Bool)
@@ -48,6 +49,12 @@ MaybeBool.or(a: MaybeBool, b: MaybeBool) : MaybeBool
     none: b
   }
 
+MaybeBool.show(m : MaybeBool) : String
+  case m {
+      none : "none()"
+      some : "some" | "(" | Bool.show(m.value) | ")" 
+  } 
+
 MaybeBool.test(msg: String, exp: MaybeBool, rec: MaybeBool): IO(Unit)
   let out = case MaybeBool.eql(exp, rec) {
       true: String.concat(msg, ": Success")
@@ -60,6 +67,16 @@ MaybeBool.test(msg: String, exp: MaybeBool, rec: MaybeBool): IO(Unit)
 
 ex_01: IO(Unit)
   IO {
+
+    Tests._01.is_none(MaybeBool.is_none)
+    Tests._01.is_some(MaybeBool.is_some)
+    Tests._01.eql(MaybeBool.eql)
+    Tests._01.extract(MaybeBool.extract)
+    Tests._01.create(MaybeBool.create)
+    Tests._01.or(MaybeBool.or)
+
+    IO.print("\n")
+
     IO.print("-- is_none --")
     Bool.test("wen none",        Bool.true,  MaybeBool.is_none(MaybeBool.none))
     Bool.test("wen some(false)", Bool.false, MaybeBool.is_none(MaybeBool.some(Bool.false)))

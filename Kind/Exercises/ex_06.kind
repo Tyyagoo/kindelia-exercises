@@ -291,6 +291,22 @@ Inte.test(msg: String, exp: Inte, rec: Inte): IO(Unit)
 ex_06: IO(Unit)
   IO {
 
+    Tests._06.inc(inc)
+    Tests._06.dec(dec)
+    Tests._06.dbl(dbl)
+    Tests._06.add(add)
+    Tests._06.mul(mul)
+    Tests._06.sub(sub)
+    Tests._06.eql(eql)
+    Tests._06.gtn(gtn)
+    Tests._06.ltn(ltn)
+    Tests._06.min(min)
+    Tests._06.max(max)
+    Tests._06.hlf(hlf)
+    Tests._06.div(div)
+
+    IO.print("\n")
+
     IO.print("--- inc ---")
     Inte.test("wen +1", int(true,  2), inc(int(true,  1)))
     Inte.test("wen +0", int(true,  1), inc(int(true,  0)))

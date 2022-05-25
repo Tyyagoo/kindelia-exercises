@@ -79,6 +79,20 @@ Bool.test(msg: String, exp: Bool, rec: Bool): IO(Unit)
 
 ex_00: IO(Unit)
   IO {
+
+    Tests._00.is_true(Bool.is_true)
+    Tests._00.is_false(Bool.is_false)
+    Tests._00.neg(Bool.neg)
+    Tests._00.and(Bool.and)
+    Tests._00.or(Bool.or)
+    Tests._00.eql(Bool.eql)
+    Tests._00.xor(Bool.xor)
+    Tests._00.nor(Bool.nor)
+    Tests._00.nand(Bool.nand)
+    Tests._00.xnor(Bool.xnor)
+
+    IO.print("\n")
+
     IO.print("-- is_true --")
     Bool.test("wen true",  Bool.true,  Bool.is_true(Bool.true))
     Bool.test("wen false", Bool.false, Bool.is_true(Bool.false))

@@ -44,6 +44,10 @@ PairBool.swap(pair: PairBool): PairBool
     new: PairBool.new(pair.snd, pair.fst)
   }
 
+// Creates an PairBool from two Bool's
+PairBool.create(a: Bool, b: Bool): PairBool
+  PairBool.new(a, b)
+
 PairBool.test(msg: String, exp: PairBool, rec: PairBool): IO(Unit)
   let out = case PairBool.eql(exp, rec) {
     true: String.concat(msg, ": Success")
@@ -56,6 +60,18 @@ PairBool.test(msg: String, exp: PairBool, rec: PairBool): IO(Unit)
 
 ex_02: IO(Unit)
   IO {
+
+    Tests._02.fst(PairBool.fst)
+    Tests._02.snd(PairBool.snd)
+    Tests._02.eql_elements(PairBool.eql_elements)
+    Tests._02.eql(PairBool.eql)
+    Tests._02.not_eql(PairBool.not_eql)
+    Tests._02.create(PairBool.create)
+    Tests._02.neg(PairBool.neg)
+    Tests._02.swap(PairBool.swap)
+
+    IO.print("\n")
+
     IO.print("--- fst ---")
     Bool.test("wen (false false)", Bool.false, PairBool.fst(PairBool.new(Bool.false, Bool.false)))
     Bool.test("wen (false true)",  Bool.false, PairBool.fst(PairBool.new(Bool.false, Bool.true)))

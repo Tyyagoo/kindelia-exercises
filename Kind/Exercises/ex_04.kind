@@ -87,9 +87,11 @@ eql(a: Nat, b: Nat): Bool // Given 2 numbers, it returns true if the 2 are the s
 // 3 > 3 = False
 gtn(a: Nat, b: Nat): Bool // if A > B == True else false
   case a b {
+    zero zero: Bool.false
+    zero succ: Bool.false
     succ zero: Bool.true
     succ succ: gtn(a.pred, b.pred)
-  } default Bool.false
+  }
 
 // Lower than
 // 1 < 2 = True
@@ -165,9 +167,28 @@ Nat.mul_dump(a: Nat): IO(Unit)
     List.for.io<String>(results, IO.put_string)
     IO.print("")
   }
-  
+
 ex_04: IO(Unit)
   IO {
+
+    Tests._03.inc(inc)
+    Tests._03.dec(dec)
+    Tests._03.is_zero(is_zero)
+    Tests._04.dbl(dbl)
+    Tests._04.add(add)
+    Tests._04.mul(mul)
+    Tests._04.sub(sub)
+    Tests._04.fac(fac)
+    Tests._04.eql(eql)
+    Tests._04.gtn(gtn)
+    Tests._04.ltn(ltn)
+    Tests._04.min(min)
+    Tests._04.max(max)
+    Tests._04.hlf(hlf)
+    Tests._04.div(div)
+
+    IO.print("\n")
+
     IO.print("--- inc ---")
     Nat.test("wen zero",       1, inc(0))
     Nat.test("wen succ(zero)", 2, inc(1))
